@@ -3,16 +3,14 @@
     <el-alert
       title="由于演示功能特殊，请注意在需要时刷新您的浏览器（以重置路由设置）查看效果"
       type="warning"
-      show-icon/>
-    <d2-highlight :code="dataView"/>
+      show-icon
+    />
+    <d2-highlight :code="dataView" />
     <el-form label-position="top">
       <el-form-item label="创建路由（你可以假设上面是接口数据）">
         <el-button-group>
-          <el-button
-            v-for="item in setting"
-            :key="item.component"
-            @click="onClick(item)">
-            {{item.title}}
+          <el-button v-for="item in setting" :key="item.component" @click="onClick(item)">
+            {{ item.title }}
           </el-button>
         </el-button-group>
       </el-form-item>
@@ -26,7 +24,7 @@ import { mapState, mapMutations } from 'vuex'
 import { frameInRoutes } from '@/router/routes'
 import layoutHeaderAside from '@/layout/header-aside'
 export default {
-  data () {
+  data() {
     return {
       title: '',
       setting: [
@@ -37,19 +35,17 @@ export default {
     }
   },
   computed: {
-    ...mapState('d2admin/menu', [
-      'header'
-    ]),
-    dataView () {
+    ...mapState('d2admin/menu', ['header']),
+    dataView() {
       return JSON.stringify(this.setting, null, 2)
     }
   },
   methods: {
     ...mapMutations({
       pageInit: 'd2admin/page/init',
-      headerSet: 'd2admin/menu/headerSet'
+      headerSet: 'd2admin/menu/headerSet2'
     }),
-    onClick ({ title, name, path, component }) {
+    onClick({ title, name, path, component }) {
       // vue router 的设计暂时不能支持在路由示例上访问动态添加的路由
       // 目前可行的解决方法是自行维护一个存储路由数据的位置
       // https://github.com/vuejs/vue-router/issues/1234
@@ -66,7 +62,8 @@ export default {
             {
               path,
               name,
-              component: () => import('@/views/demo/playground/add-routes/alternates/' + component + '.vue'),
+              component: () =>
+                import('@/views/demo/playground/add-routes/alternates/' + component + '.vue'),
               meta: {
                 title
               }
@@ -76,10 +73,7 @@ export default {
       ]
       this.$router.addRoutes(route)
       // 更新标签页池
-      this.pageInit([
-        ...frameInRoutes,
-        ...route
-      ])
+      this.pageInit([...frameInRoutes, ...route])
       // 演示更新菜单
       const menuGroup = {
         title: '临时菜单',

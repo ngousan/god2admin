@@ -3,6 +3,10 @@ package core
 import (
 	"god2admin/database"
 	"god2admin/global"
+	sysMenu "god2admin/module/sys/menu"
+	sysRole "god2admin/module/sys/role"
+	sysUser "god2admin/module/sys/user"
+	sysUserRoles "god2admin/module/sys/user/roles"
 )
 
 // Initial database
@@ -15,4 +19,16 @@ func initDatabase() {
 	default:
 		database.Mysql()
 	}
+}
+
+// 注册数据库表专用
+func registerTables() {
+	db := global.DB
+	db.AutoMigrate(
+		sysUser.SysUser{},
+		sysUserRoles.SysUserRoles{},
+		sysMenu.SysMenu{},
+		sysRole.SysRole{},
+	)
+	global.LOGGER.Debug("register tables successful")
 }

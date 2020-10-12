@@ -10,14 +10,17 @@ import util from '@/libs/util.js'
 
 // 路由数据
 import routes from './routes'
+import api from '@/api'
+import layoutHeaderAside from '@/layout/header-aside'
+const _import = require('@/libs/util.import.' + process.env.NODE_ENV)
 
 // fix vue-router NavigationDuplicated
 const VueRouterPush = VueRouter.prototype.push
-VueRouter.prototype.push = function push (location) {
+VueRouter.prototype.push = function push(location) {
   return VueRouterPush.call(this, location).catch(err => err)
 }
 const VueRouterReplace = VueRouter.prototype.replace
-VueRouter.prototype.replace = function replace (location) {
+VueRouter.prototype.replace = function replace(location) {
   return VueRouterReplace.call(this, location).catch(err => err)
 }
 
@@ -74,5 +77,38 @@ router.afterEach(to => {
   // 更改标题
   util.title(to.meta.title)
 })
+
+export const asyncRoutersFormat = asyncMenus => {
+  asyncMenus.map(item => {
+    delete item.group
+    if (!item.redirect.name) {
+      delete item.redirect
+    }
+    if (item.component === 'layoutHeaderAside') {
+      item.component = layoutHeaderAside
+    } else {
+      console.log('item.component')
+      console.log(item.component)
+      item.component = _import(item.component)
+      console.log(item.component)
+    }
+    if (item.children) {
+      asyncRoutersFormat(item.children)
+    } else {
+      delete item.children
+    }
+  })
+}
+
+// 动态路由
+export async function asyncRouters(frameInRoutes) {
+  const r = await api.AUTH_USER_ROUTERS()
+  asyncRoutersFormat(r)
+  r.map(item => {
+    frameInRoutes.push(item)
+  })
+  router.addRoutes(r)
+  return frameInRoutes
+}
 
 export default router

@@ -17,7 +17,9 @@ const publicPath = process.env.VUE_APP_PUBLIC_PATH || '/'
 
 // 设置不参与构建的库
 const externals = {}
-cdnDependencies.forEach(pkg => { externals[pkg.name] = pkg.library })
+cdnDependencies.forEach(pkg => {
+  externals[pkg.name] = pkg.library
+})
 
 // 引入文件的 cdn 链接
 const cdn = {
@@ -38,13 +40,26 @@ module.exports = {
   lintOnSave: true,
   devServer: {
     publicPath, // 和 publicPath 保持一致
-    disableHostCheck: process.env.NODE_ENV === 'development' // 关闭 host check，方便使用 ngrok 之类的内网转发工具
+    disableHostCheck: process.env.NODE_ENV === 'development', // 关闭 host check，方便使用 ngrok 之类的内网转发工具
+    proxy: {
+      // 把key的路径代理到target位置
+      // detail: https://cli.vuejs.org/config/#devserver-proxy
+      [process.env.VUE_APP_BASE_API]: {
+        //需要代理的路径   例如 '/api'
+        target: `http://127.0.0.1:8888`, //代理到 目标路径
+        changeOrigin: true,
+        pathRewrite: {
+          // 修改路径数据
+          ['^' + process.env.VUE_APP_BASE_API]: '' // 举例 '^/api:""' 把路径中的/api字符串删除
+        }
+      }
+    }
   },
   css: {
     loaderOptions: {
       // 设置 scss 公用变量文件
       sass: {
-        prependData: '@import \'~@/assets/style/public.scss\';'
+        prependData: "@import '~@/assets/style/public.scss';"
       }
     }
   },
@@ -72,7 +87,10 @@ module.exports = {
      * 添加 CDN 参数到 htmlWebpackPlugin 配置中
      * 已适配多页
      */
-    const htmlPluginNames = chain(pages).keys().map(page => 'html-' + page).value()
+    const htmlPluginNames = chain(pages)
+      .keys()
+      .map(page => 'html-' + page)
+      .value()
     const targetHtmlPluginNames = htmlPluginNames.length ? htmlPluginNames : ['html']
     each(targetHtmlPluginNames, name => {
       config.plugin(name).tap(options => {
@@ -87,31 +105,25 @@ module.exports = {
      * https://cli.vuejs.org/zh/guide/html-and-static-assets.html#preload
      * 而且预渲染时生成的 prefetch 标签是 modern 版本的，低版本浏览器是不需要的
      */
-    config.plugins
-      .delete('prefetch')
-      .delete('preload')
+    config.plugins.delete('prefetch').delete('preload')
     // 解决 cli3 热更新失效 https://github.com/vuejs/vue-cli/issues/1559
-    config.resolve
-      .symlinks(true)
-    config
-      .plugin('theme-color-replacer')
-      .use(ThemeColorReplacer, [{
+    config.resolve.symlinks(true)
+    config.plugin('theme-color-replacer').use(ThemeColorReplacer, [
+      {
         fileName: 'css/theme-colors.[contenthash:8].css',
         matchColors: [
           ...forElementUI.getElementUISeries(process.env.VUE_APP_ELEMENT_COLOR) // Element-ui主色系列
         ],
         externalCssFiles: ['./node_modules/element-ui/lib/theme-chalk/index.css'], // optional, String or string array. Set external css files (such as cdn css) to extract colors.
         changeSelector: forElementUI.changeSelector
-      }])
+      }
+    ])
     config
       // 开发环境 sourcemap 不包含列信息
-      .when(process.env.NODE_ENV === 'development',
-        config => config.devtool('cheap-source-map')
-      )
+      .when(process.env.NODE_ENV === 'development', config => config.devtool('cheap-source-map'))
       // 预览环境构建 vue-loader 添加 filename
-      .when(
-        process.env.VUE_APP_SCOURCE_LINK === 'TRUE',
-        config => VueFilenameInjector(config, {
+      .when(process.env.VUE_APP_SCOURCE_LINK === 'TRUE', config =>
+        VueFilenameInjector(config, {
           propName: process.env.VUE_APP_SOURCE_VIEWER_PROP_NAME
         })
       )
@@ -125,8 +137,7 @@ module.exports = {
     // svg
     const svgRule = config.module.rule('svg')
     svgRule.uses.clear()
-    svgRule
-      .include
+    svgRule.include
       .add(resolve('src/assets/svg-icons/icons'))
       .end()
       .use('svg-sprite-loader')
@@ -139,12 +150,10 @@ module.exports = {
     const imagesRule = config.module.rule('images')
     imagesRule
       .test(/\.(png|jpe?g|gif|webp|svg)(\?.*)?$/)
-      .exclude
-      .add(resolve('src/assets/svg-icons/icons'))
+      .exclude.add(resolve('src/assets/svg-icons/icons'))
       .end()
     // 重新设置 alias
-    config.resolve.alias
-      .set('@api', resolve('src/api'))
+    config.resolve.alias.set('@api', resolve('src/api'))
     // 分析工具
     if (process.env.npm_config_report) {
       config

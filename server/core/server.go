@@ -24,7 +24,10 @@ func init() {
 	initLogger()
 	fmt.Println("初始化Database...")
 	initDatabase()
+	fmt.Println("初始化Tables...")
+	registerTables()
 	fmt.Println(splitLine)
+
 }
 
 func initServer(address string, router *gin.Engine) server {
@@ -55,7 +58,8 @@ func StopServer() {
 
 	// 程序结束前关闭数据库链接
 	global.LOGGER.Info("Close Database...")
-	global.DB.Close()
+	db, _ := global.DB.DB()
+	defer db.Close()
 
 	global.LOGGER.Info("Stop Server...")
 	fmt.Println(splitLine)

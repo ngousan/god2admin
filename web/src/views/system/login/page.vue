@@ -5,158 +5,111 @@
         <li v-for="n in 10" :key="n"></li>
       </ul>
     </div>
-    <div
-      class="page-login--layer page-login--layer-time"
-      flex="main:center cross:center">
-      {{time}}
+    <div class="page-login--layer page-login--layer-time" flex="main:center cross:center">
+      {{ time }}
     </div>
     <div class="page-login--layer">
-      <div
-        class="page-login--content"
-        flex="dir:top main:justify cross:stretch box:justify">
+      <div class="page-login--content" flex="dir:top main:justify cross:stretch box:justify">
         <div class="page-login--content-header">
           <p class="page-login--content-header-motto">
-            时间是一切财富中最宝贵的财富
+            <!-- {{ this.loginForm.captchaId }} -->
           </p>
         </div>
-        <div
-          class="page-login--content-main"
-          flex="dir:top main:center cross:center">
+        <div class="page-login--content-main" flex="dir:top main:center cross:center">
           <!-- logo -->
-          <img class="page-login--logo" src="./image/logo@2x.png">
+          <img class="page-login--logo" src="./image/logo@2x.png" />
           <!-- form -->
           <div class="page-login--form">
-            <el-card shadow="never">
+            <el-card shadow="hover">
               <el-form
                 ref="loginForm"
                 label-position="top"
                 :rules="rules"
-                :model="formLogin"
-                size="default">
+                :model="loginForm"
+                size="default"
+              >
                 <el-form-item prop="username">
-                  <el-input
-                    type="text"
-                    v-model="formLogin.username"
-                    placeholder="用户名">
+                  <el-input type="text" v-model="loginForm.username" placeholder="用户名">
                     <i slot="prepend" class="fa fa-user-circle-o"></i>
                   </el-input>
                 </el-form-item>
                 <el-form-item prop="password">
-                  <el-input
-                    type="password"
-                    v-model="formLogin.password"
-                    placeholder="密码">
+                  <el-input type="password" v-model="loginForm.password" placeholder="密码">
                     <i slot="prepend" class="fa fa-keyboard-o"></i>
                   </el-input>
                 </el-form-item>
-                <el-form-item prop="code">
-                  <el-input
-                    type="text"
-                    v-model="formLogin.code"
-                    placeholder="验证码">
+                <el-form-item prop="catpcha">
+                  <el-input type="text" v-model="loginForm.captcha" placeholder="验证码">
                     <template slot="append">
-                      <img class="login-code" src="./image/login-code.png">
+                      <img
+                        class="login-catpcha"
+                        v-if="picPath"
+                        :src="picPath"
+                        width="100%"
+                        height="100%"
+                        alt="请输入验证码"
+                        @click="loginVefify()"
+                      />
                     </template>
                   </el-input>
                 </el-form-item>
-                <el-button
-                  size="default"
-                  @click="submit"
-                  type="primary"
-                  class="button-login">
+                <el-button size="default" @click="submit" type="primary" class="button-login">
                   登录
                 </el-button>
               </el-form>
             </el-card>
-            <p
-              class="page-login--options"
-              flex="main:justify cross:center">
-              <span><d2-icon name="question-circle"/> 忘记密码</span>
+            <p class="page-login--options" flex="main:justify cross:center">
+              <span><d2-icon name="question-circle" /> 忘记密码</span>
               <span>注册用户</span>
             </p>
-            <!-- quick login -->
-            <el-button class="page-login--quick" size="default" type="info" @click="dialogVisible = true">
-              快速选择用户（测试功能）
-            </el-button>
           </div>
         </div>
         <div class="page-login--content-footer">
-          <p class="page-login--content-footer-locales">
+          <!-- <p class="page-login--content-footer-locales">
             <a
               v-for="language in $languages"
               :key="language.value"
-              @click="onChangeLocale(language.value)">
+              @click="onChangeLocale(language.value)"
+            >
               {{ language.label }}
             </a>
-          </p>
-          <p class="page-login--content-footer-copyright">
+          </p> -->
+          <!-- <p class="page-login--content-footer-copyright">
             Copyright
-            <d2-icon name="copyright"/>
-            2018 D2 Projects 开源组织出品
-            <a href="https://github.com/FairyEver">
-              @FairyEver
+            <d2-icon name="copyright" />
+            2020 aochen
+            <a href="https://github.com/Ngousan">
+              @Ngousan
             </a>
-          </p>
-          <p class="page-login--content-footer-options">
+          </p> -->
+          <!-- <p class="page-login--content-footer-options">
             <a href="#">帮助</a>
             <a href="#">隐私</a>
             <a href="#">条款</a>
-          </p>
+          </p> -->
         </div>
       </div>
     </div>
-    <el-dialog
-      title="快速选择用户"
-      :visible.sync="dialogVisible"
-      width="400px">
-      <el-row :gutter="10" style="margin: -20px 0px -10px 0px;">
-        <el-col v-for="(user, index) in users" :key="index" :span="8">
-          <div class="page-login--quick-user" @click="handleUserBtnClick(user)">
-            <d2-icon name="user-circle-o"/>
-            <span>{{user.name}}</span>
-          </div>
-        </el-col>
-      </el-row>
-    </el-dialog>
   </div>
 </template>
 
 <script>
 import dayjs from 'dayjs'
 import { mapActions } from 'vuex'
+import api from '@/api'
 import localeMixin from '@/locales/mixin.js'
+
 export default {
-  mixins: [
-    localeMixin
-  ],
-  data () {
+  mixins: [localeMixin],
+  data() {
     return {
       timeInterval: null,
       time: dayjs().format('HH:mm:ss'),
-      // 快速选择用户
-      dialogVisible: false,
-      users: [
-        {
-          name: 'Admin',
-          username: 'admin',
-          password: 'admin'
-        },
-        {
-          name: 'Editor',
-          username: 'editor',
-          password: 'editor'
-        },
-        {
-          name: 'User1',
-          username: 'user1',
-          password: 'user1'
-        }
-      ],
-      // 表单
-      formLogin: {
-        username: 'admin',
-        password: 'admin',
-        code: 'v9am'
+      loginForm: {
+        username: 'fangaochen',
+        password: 'abcd1234',
+        captcha: '',
+        captchaId: ''
       },
       // 表单校验
       rules: {
@@ -174,59 +127,60 @@ export default {
             trigger: 'blur'
           }
         ],
-        code: [
+        captcha: [
           {
             required: true,
             message: '请输入验证码',
             trigger: 'blur'
           }
         ]
-      }
+      },
+      picPath: ''
     }
   },
-  mounted () {
+  created() {
+    this.loginVefify()
+  },
+  mounted() {
     this.timeInterval = setInterval(() => {
       this.refreshTime()
     }, 1000)
   },
-  beforeDestroy () {
+  beforeDestroy() {
     clearInterval(this.timeInterval)
   },
   methods: {
-    ...mapActions('d2admin/account', [
-      'login'
-    ]),
-    refreshTime () {
+    ...mapActions('d2admin/account', ['login']),
+    refreshTime() {
       this.time = dayjs().format('HH:mm:ss')
     },
-    /**
-     * @description 接收选择一个用户快速登录的事件
-     * @param {Object} user 用户信息
-     */
-    handleUserBtnClick (user) {
-      this.formLogin.username = user.username
-      this.formLogin.password = user.password
-      this.submit()
+
+    // 验证码
+    loginVefify() {
+      api.AUTH_CAPTCHA({}).then(ele => {
+        this.picPath = ele.picPath
+        this.loginForm.captchaId = ele.captchaId
+      })
     },
+
     /**
      * @description 提交表单
      */
     // 提交登录信息
-    submit () {
-      this.$refs.loginForm.validate((valid) => {
+    submit() {
+      this.$refs.loginForm.validate(valid => {
         if (valid) {
           // 登录
           // 注意 这里的演示没有传验证码
           // 具体需要传递的数据请自行修改代码
-          this.login({
-            username: this.formLogin.username,
-            password: this.formLogin.password
+          this.login(this.loginForm).then(() => {
+            // 重定向对象不存在则返回顶层路径
+            // this.$router.replace(this.$route.query.redirect || '/')
+            location.href = this.$route.query.redirect || '/'
           })
-            .then(() => {
-              // 重定向对象不存在则返回顶层路径
-              this.$router.replace(this.$route.query.redirect || '/')
-            })
+          this.loginVefify()
         } else {
+          this.loginVefify()
           // 登录表单校验失败
           this.$message.error('表单校验失败，请检查')
         }
@@ -239,7 +193,7 @@ export default {
 <style lang="scss">
 .page-login {
   @extend %unable-select;
-  $backgroundColor: #F0F2F5;
+  $backgroundColor: #f0f2f5;
   // ---
   background-color: $backgroundColor;
   height: 100%;
@@ -296,8 +250,9 @@ export default {
     .el-input-group__prepend {
       padding: 0px 14px;
     }
-    .login-code {
+    .login-catpcha {
       height: 40px - 2px;
+      width: 80px - 2px;
       display: block;
       margin: 0px -20px;
       border-top-right-radius: 2px;
@@ -353,7 +308,7 @@ export default {
       color: $color-text-normal;
       a {
         color: $color-text-normal;
-        margin: 0 .5em;
+        margin: 0 0.5em;
         &:hover {
           color: $color-text-main;
         }
@@ -399,16 +354,16 @@ export default {
       list-style: none;
       width: 20px;
       height: 20px;
-      background: #FFF;
+      background: #fff;
       animation: animate 25s linear infinite;
       bottom: -200px;
       @keyframes animate {
-        0%{
+        0% {
           transform: translateY(0) rotate(0deg);
           opacity: 1;
           border-radius: 0;
         }
-        100%{
+        100% {
           transform: translateY(-1000px) rotate(720deg);
           opacity: 0;
           border-radius: 50%;
